@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Cors;
 using WebApiNet8.Entidades;
+using WebApiNet8.Repositorios;
 
 var builder = WebApplication.CreateBuilder(args);
 string AllowedHosts = builder.Configuration.GetValue<string>("AllowedHosts")!;
@@ -31,6 +32,11 @@ builder.Services.AddOutputCache();
 //Configuración de Swagger para documentación de la API
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+//Configuración de Repositorios
+builder.Services.AddScoped<IRepositorioGeneros, RepositorioGeneros>();
+
+
 #endregion
 
 var app = builder.Build();
@@ -51,7 +57,7 @@ app.UseCors();
 app.UseOutputCache();
 
 // Middleware Endpoints
-app.MapGet("/Generos", [EnableCors(policyName:"AllowAll")]() =>
+app.MapGet("/generos", [EnableCors(policyName:"AllowAll")]() =>
 {
     var generos = new List<Genero>
     {
@@ -64,7 +70,11 @@ app.MapGet("/Generos", [EnableCors(policyName:"AllowAll")]() =>
     return generos;
 }).CacheOutput(c=> c.Expire(TimeSpan.FromSeconds(15))); // Se Agrega cache de 15 segundos
 
-
+app.MapPost("/generos", async (Genero genero, IRepositorioGeneros repositorioGeneros) =>
+{
+    var id = await repositorioGeneros.CrearGenero(genero);
+    return TypedResults.Created($"/generos/{id}", genero);
+});
 #endregion
 
 app.Run();
