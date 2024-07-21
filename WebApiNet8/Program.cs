@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.OutputCaching;
+using WebApiNet8.EndPoints;
 using WebApiNet8.Entidades;
 using WebApiNet8.Repositorios;
 
@@ -57,24 +60,12 @@ app.UseCors();
 app.UseOutputCache();
 
 // Middleware Endpoints
-app.MapGet("/generos", [EnableCors(policyName:"AllowAll")]() =>
-{
-    var generos = new List<Genero>
-    {
-        new Genero { IdGenero = 1, NombreGenero = "Comedia" },
-        new Genero { IdGenero = 2, NombreGenero = "Drama" },
-        new Genero { IdGenero = 3, NombreGenero = "Acción" },
-        new Genero { IdGenero = 4, NombreGenero = "Romance" },
-        new Genero { IdGenero = 5, NombreGenero = "Ciencia Ficción" }
-    };
-    return generos;
-}).CacheOutput(c=> c.Expire(TimeSpan.FromSeconds(15))); // Se Agrega cache de 15 segundos
+app.MapGroup("/generos").MapGeneros();
 
-app.MapPost("/generos", async (Genero genero, IRepositorioGeneros repositorioGeneros) =>
-{
-    var id = await repositorioGeneros.CrearGenero(genero);
-    return TypedResults.Created($"/generos/{id}", genero);
-});
-#endregion
+
+
+#endregion Middlewares
 
 app.Run();
+
+
