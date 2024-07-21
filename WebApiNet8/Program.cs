@@ -25,6 +25,9 @@ builder.Services.AddCors(options =>
     }
 });
 
+//Configuración de Caché del lado del servidor
+builder.Services.AddOutputCache();
+
 
 #endregion
 
@@ -35,7 +38,8 @@ var app = builder.Build();
 
 // Middleware para aplicar politica de CORS
 app.UseCors();
-
+// Middleware para caché del lado del servidor
+app.UseOutputCache();
 // Middleware Endpoints
 app.MapGet("/Generos", [EnableCors(policyName:"AllowAll")]() =>
 {
@@ -48,7 +52,7 @@ app.MapGet("/Generos", [EnableCors(policyName:"AllowAll")]() =>
         new Genero { IdGenero = 5, NombreGenero = "Ciencia Ficción" }
     };
     return generos;
-});
+}).CacheOutput(c=> c.Expire(TimeSpan.FromSeconds(15)));
 
 
 #endregion
