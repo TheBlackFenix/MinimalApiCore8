@@ -38,7 +38,8 @@ builder.Services.AddSwaggerGen();
 
 //Configuración de Repositorios
 builder.Services.AddScoped<IRepositorioGeneros, RepositorioGeneros>();
-
+// Se agrega el servicio de AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
 
 #endregion
 
