@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
+using System.Data;
 using WebApiNet8.Entidades;
 
 namespace WebApiNet8.Repositorios
@@ -15,7 +16,7 @@ namespace WebApiNet8.Repositorios
         {
             using (var connection = new SqlConnection(_connectionString))
             {
-                var id = await connection.QuerySingleAsync<int>(@"INSERT INTO Generos (NombreGenero) VALUES (@NombreGenero) SELECT SCOPE_IDENTITY()", genero);
+                var id = await connection.QuerySingleAsync<int>(@"sp_Genero_Crear", new {NombreGenero = genero.NombreGenero}, commandType: CommandType.StoredProcedure);
                 genero.IdGenero = id;
                 return id;
             }
@@ -25,7 +26,7 @@ namespace WebApiNet8.Repositorios
         {
             using (var connection = new SqlConnection(_connectionString))
             {
-                var result = await connection.QueryAsync<Genero>("SELECT IdGenero, NombreGenero FROM Generos WHERE Activo = 1 ORDER BY NombreGenero ASC");
+                var result = await connection.QueryAsync<Genero>("sp_Genero_ObtenerTodos", commandType: CommandType.StoredProcedure);
 
                 return result.ToList();
             }
@@ -35,7 +36,7 @@ namespace WebApiNet8.Repositorios
         {
             using (var connection = new SqlConnection(_connectionString))
             {
-                var result = await connection.QueryFirstOrDefaultAsync<Genero>("SELECT IdGenero, NombreGenero FROM Generos WHERE IdGenero = @IdGenero AND Activo = 1", new { IdGenero = id });
+                var result = await connection.QueryFirstOrDefaultAsync<Genero>("sp_Genero_ObtenerPorId", new { IdGenero = id }, commandType: CommandType.StoredProcedure);
 
                 return result;
             }
@@ -45,10 +46,7 @@ namespace WebApiNet8.Repositorios
         {
             using (var connection = new SqlConnection(_connectionString))
             {
-                var result = await connection.QueryFirstOrDefaultAsync<bool>(@"IF EXISTS (SELECT 1 FROM Generos WHERE IdGenero = @IdGenero AND Activo = 1) 
-                                                                                    SELECT 1 
-                                                                                ELSE 
-                                                                                    SELECT 0", new { IdGenero = id });
+                var result = await connection.QueryFirstOrDefaultAsync<bool>(@"sp_Genero_Existe", new { IdGenero = id }, commandType: CommandType.StoredProcedure);
 
                 return result;
             }
@@ -58,7 +56,7 @@ namespace WebApiNet8.Repositorios
         {
             using (var connection = new SqlConnection(_connectionString))
             {
-                await connection.ExecuteAsync(@"UPDATE Generos SET NombreGenero = @NombreGenero WHERE  IdGenero = @IdGenero AND Activo = 1", genero);
+                await connection.ExecuteAsync(@"sp_Genero_ActualizarPorId", genero, commandType: CommandType.StoredProcedure);
 
             }
         }
@@ -67,7 +65,7 @@ namespace WebApiNet8.Repositorios
         {
             using (var connection = new SqlConnection(_connectionString))
             {
-                await connection.ExecuteAsync(@"UPDATE Generos SET Activo = 0 WHERE IdGenero = @IdGenero", new {IdGenero = id});
+                await connection.ExecuteAsync(@"sp_Genero_EliminarPorId", new {IdGenero = id}, commandType: CommandType.StoredProcedure);
             }
         }
     }
