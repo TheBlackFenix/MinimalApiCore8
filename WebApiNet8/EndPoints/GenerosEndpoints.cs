@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
-using WebApiNet8.DTOs;
+using WebApiNet8.DTOs.Generos;
 using WebApiNet8.Entidades;
 using WebApiNet8.Repositorios;
 

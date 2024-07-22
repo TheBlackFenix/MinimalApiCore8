@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using WebApiNet8.EndPoints;
 using WebApiNet8.Entidades;
 using WebApiNet8.Repositorios;
+using WebApiNet8.Servicios;
 
 var builder = WebApplication.CreateBuilder(args);
 string AllowedHosts = builder.Configuration.GetValue<string>("AllowedHosts")!;
@@ -38,6 +39,12 @@ builder.Services.AddSwaggerGen();
 
 //Configuración de Repositorios
 builder.Services.AddScoped<IRepositorioGeneros, RepositorioGeneros>();
+builder.Services.AddScoped<IRepositorioActores, RepositorioActores>();
+//Servicio para almacenar archivos en Azure
+//builder.Services.AddScoped<IAlmacenarArchivos, AlmacenadorArchivosAzure>();
+//Servicio para almacenar archivos en Local
+builder.Services.AddScoped<IAlmacenarArchivos, AlmacenadorArchivosLocal>();
+builder.Services.AddHttpContextAccessor();
 // Se agrega el servicio de AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 
@@ -53,7 +60,8 @@ if(app.Environment.IsDevelopment()) // Solo se activa en ambiente de desarrollo
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+// Midelware para usar archivos estáticos
+app.UseStaticFiles();
 // Middleware para aplicar politica de CORS
 app.UseCors();
 
@@ -62,6 +70,7 @@ app.UseOutputCache();
 
 // Middleware Endpoints
 app.MapGroup("/generos").MapGeneros();
+app.MapGroup("/actores").MapActores().DisableAntiforgery();
 
 
 

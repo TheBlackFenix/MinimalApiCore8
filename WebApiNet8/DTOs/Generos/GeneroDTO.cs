@@ -1,4 +1,4 @@
-﻿namespace WebApiNet8.DTOs
+﻿namespace WebApiNet8.DTOs.Generos
 {
     public class GeneroDTO
     {
