@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+#AppSetings Development
+WebApiNet8/appsettings.Development.json
+#wwwroot
+WebApiNet8/wwwroot
