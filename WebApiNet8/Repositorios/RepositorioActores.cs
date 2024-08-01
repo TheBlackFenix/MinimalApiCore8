@@ -2,6 +2,7 @@
 using Microsoft.Data.SqlClient;
 using System.Data;
 using WebApiNet8.DTOs.Actores;
+using WebApiNet8.DTOs.Paginacion;
 using WebApiNet8.Entidades;
 
 namespace WebApiNet8.Repositorios
@@ -9,19 +10,38 @@ namespace WebApiNet8.Repositorios
     public class RepositorioActores : IRepositorioActores
     {
         private readonly string connectionString;
-        public RepositorioActores(IConfiguration configuration)
+        private readonly IConfiguration configuration;
+        private readonly HttpContext httpContext;
+
+        public RepositorioActores(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             connectionString = configuration.GetConnectionString("DefaultConnection")!;
+            this.configuration = configuration;
+            httpContext = httpContextAccessor.HttpContext!;
         }
 
-        public async Task<List<Actor>> ObtenerTodos()
+        public async Task<List<Actor>> ObtenerTodos(PaginacionDTO paginacion)
         {
             using (var conexion = new SqlConnection(connectionString))
             {
-                var actores = await conexion.QueryAsync<Actor>("sp_Actor_ObtenerTodos", commandType: CommandType.StoredProcedure);
+                var actores = await conexion.QueryAsync<Actor>("sp_Actor_ObtenerTodos", 
+                                                                new { Pagina = paginacion.Pagina, RegistrosPorPagina = paginacion.RegistrosPorPagina }, 
+                                                                commandType: CommandType.StoredProcedure);
+
+                var cantidad = await conexion.QuerySingleAsync<int>("sp_Actor_Cantidad", commandType: CommandType.StoredProcedure);
+                httpContext.Response.Headers.Append("cantidadTotalRegistros", cantidad.ToString());
                 return actores.ToList();
             }
 
+        }
+        public async Task<List<Actor>> ObtenerFiltrados(string nombreActor)
+        {
+            using (var conexion = new SqlConnection(connectionString))
+            {
+                var actor = await conexion.QueryAsync<Actor>("sp_Actor_ObtenerFiltrados", new { NombreActor = nombreActor }, commandType: CommandType.StoredProcedure);
+                return actor.ToList();
+
+            }
         }
         public async Task<Actor> ObtenerPorId(int id)
         {

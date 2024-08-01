@@ -40,10 +40,14 @@ builder.Services.AddSwaggerGen();
 //Configuración de Repositorios
 builder.Services.AddScoped<IRepositorioGeneros, RepositorioGeneros>();
 builder.Services.AddScoped<IRepositorioActores, RepositorioActores>();
+builder.Services.AddScoped<IRepositorioPeliculas, RepositorioPeliculas>();
+builder.Services.AddScoped<IRepositorioComentarios, RepositorioComentarios>();
 //Servicio para almacenar archivos en Azure
-//builder.Services.AddScoped<IAlmacenarArchivos, AlmacenadorArchivosAzure>();
+builder.Services.AddScoped<IAlmacenarArchivos, AlmacenadorArchivosAzure>();
 //Servicio para almacenar archivos en Local
-builder.Services.AddScoped<IAlmacenarArchivos, AlmacenadorArchivosLocal>();
+//builder.Services.AddScoped<IAlmacenarArchivos, AlmacenadorArchivosLocal>();
+
+
 builder.Services.AddHttpContextAccessor();
 // Se agrega el servicio de AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
@@ -71,7 +75,8 @@ app.UseOutputCache();
 // Middleware Endpoints
 app.MapGroup("/generos").MapGeneros();
 app.MapGroup("/actores").MapActores().DisableAntiforgery();
-
+app.MapGroup("/peliculas").MapPeliculas().DisableAntiforgery();
+app.MapGroup("/peliculas/{idPelicula:int}/comentarios").MapComentarios();
 
 
 #endregion Middlewares

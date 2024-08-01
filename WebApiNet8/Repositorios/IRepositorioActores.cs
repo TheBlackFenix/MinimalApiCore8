@@ -1,4 +1,5 @@
-﻿using WebApiNet8.Entidades;
+﻿using WebApiNet8.DTOs.Paginacion;
+using WebApiNet8.Entidades;
 
 namespace WebApiNet8.Repositorios
 {
@@ -9,6 +10,7 @@ namespace WebApiNet8.Repositorios
         Task EliminarActor(int id);
         Task<Actor> ObtenerPorId(int id);
         Task<bool> Existe(int id);
-        Task<List<Actor>> ObtenerTodos();
+        Task<List<Actor>> ObtenerTodos(PaginacionDTO paginacion);
+        Task<List<Actor>> ObtenerFiltrados(string nombreActor);
     }
 }
