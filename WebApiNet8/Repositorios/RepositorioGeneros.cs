@@ -81,5 +81,18 @@ namespace WebApiNet8.Repositorios
                 return result.ToList();
             }
         }
+
+        public async Task<bool> Existe(int idGenero, string nombreGenero)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var result = await connection
+                    .QuerySingleAsync<bool>(@"sp_Genero_ExistePorIdYNombre",
+                        new { IdGenero = idGenero, NombreGenero = nombreGenero },
+                        commandType: CommandType.StoredProcedure);
+
+                return result;
+            }
+        }
     }
 }

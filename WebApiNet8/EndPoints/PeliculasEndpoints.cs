@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using WebApiNet8.DTOs.Paginacion;
 using WebApiNet8.DTOs.Peliculas;
 using WebApiNet8.Entidades;
+using WebApiNet8.Filtros;
 using WebApiNet8.Repositorios;
 using WebApiNet8.Servicios;
 
@@ -16,10 +17,10 @@ namespace WebApiNet8.EndPoints
         private static readonly string cacheName = "Peliculas-list";
         public static RouteGroupBuilder MapPeliculas(this RouteGroupBuilder group)
         {
-            group.MapPost("/", Crear);
+            group.MapPost("/", Crear).AddEndpointFilter<FiltroValidaciones<CrearPeliculaDTO>>();
+            group.MapPut("/{id:int}", ActualizarPorId).AddEndpointFilter<FiltroValidaciones<CrearPeliculaDTO>>();
             group.MapGet("/", ObtenerTodos).CacheOutput(c=>c.Expire(TimeSpan.FromSeconds(60)).Tag(cacheName));
             group.MapGet("/{id:int}", ObtenerPorId);
-            group.MapPut("/{id:int}", ActualizarPorId);
             group.MapPost("/{id:int}/asignargeneros", AsignarGeneros);
             group.MapPost("/{id:int}/asignaractores", AsignarActores);
             return group;

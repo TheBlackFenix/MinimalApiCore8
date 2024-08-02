@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using WebApiNet8.DTOs.Comentarios;
 using WebApiNet8.DTOs.Generos;
 using WebApiNet8.Entidades;
+using WebApiNet8.Filtros;
 using WebApiNet8.Repositorios;
 
 namespace WebApiNet8.EndPoints
@@ -22,7 +23,7 @@ namespace WebApiNet8.EndPoints
 
             group.MapGet("/{id}", ObtenerComentarioPorId);
 
-            group.MapPost("/", CrearComentario);
+            group.MapPost("/", CrearComentario).AddEndpointFilter<FiltroValidaciones<CrearComentarioDTO>>();
 
             group.MapPut("/{id}", ActualizarComentario);
 

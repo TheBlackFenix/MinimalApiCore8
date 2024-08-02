@@ -11,5 +11,6 @@ namespace WebApiNet8.Repositorios
         Task ActualizarGenero(Genero genero);
         Task EliminarGenero(int id);
         Task<List<int>> Existen(List<int> ids);
+        Task<bool> Existe(int idGenero, string nombreGenero);
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using WebApiNet8.DTOs.Generos;
 using WebApiNet8.Entidades;
+using WebApiNet8.Filtros;
 using WebApiNet8.Repositorios;
 
 namespace WebApiNet8.EndPoints
@@ -15,11 +16,20 @@ namespace WebApiNet8.EndPoints
 
             group.MapGet("/", ObtenerGeneros).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("generos-list")); // Se Agrega cache de 60 segundos
 
+            //group.MapGet("/{id}", ObtenerGenerosPorId).AddEndpointFilter(async (contexto, next) =>
+            //{
+            //    //Antes del Controlador
+            //    var result = await next(contexto);
+            //    //Después del Controlador
+            //    return result;
+
+            //});
+            //group.MapGet("/{id}", ObtenerGenerosPorId).AddEndpointFilter<FiltroEjemplo>();
             group.MapGet("/{id}", ObtenerGenerosPorId);
 
-            group.MapPost("/", CrearGenero);
+            group.MapPost("/", CrearGenero).AddEndpointFilter<FiltroValidaciones<CrearGeneroDTO>>();
 
-            group.MapPut("/{id}", ActualizarGenero);
+            group.MapPut("/{id}", ActualizarGenero).AddEndpointFilter<FiltroValidaciones<CrearGeneroDTO>>();
 
             group.MapDelete("/{id}", EliminarGenero);
 
@@ -44,13 +54,9 @@ namespace WebApiNet8.EndPoints
             return TypedResults.Ok(generoDTO);
         }
 
-        static async Task<Results<Created<GeneroDTO>, ValidationProblem>> CrearGenero(CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repositorioGeneros, IOutputCacheStore outputCacheStore, IMapper mapper, IValidator<CrearGeneroDTO> validator)
+        static async Task<Results<Created<GeneroDTO>, ValidationProblem>> CrearGenero(CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repositorioGeneros, IOutputCacheStore outputCacheStore, IMapper mapper)
         {
-            var resultValidation = await validator.ValidateAsync(crearGeneroDTO);
-            if (!resultValidation.IsValid)
-            {
-                return TypedResults.ValidationProblem(resultValidation.ToDictionary());
-            }
+   
             var genero = mapper.Map<Genero>(crearGeneroDTO);
             var id = await repositorioGeneros.CrearGenero(genero);
             await outputCacheStore.EvictByTagAsync("generos-list", default);
@@ -59,8 +65,9 @@ namespace WebApiNet8.EndPoints
             return TypedResults.Created($"/generos/{id}", generoDTO);
         }
 
-        static async Task<Results<NoContent, NotFound>> ActualizarGenero(int id, CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repositorioGeneros, IOutputCacheStore outputCacheStore, IMapper mapper)
+        static async Task<Results<NoContent, NotFound,ValidationProblem>> ActualizarGenero(int id, CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repositorioGeneros, IOutputCacheStore outputCacheStore, IMapper mapper)
         {
+            
             var existe = await repositorioGeneros.Existe(id);
             if (!existe)
             {

@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using WebApiNet8.DTOs.Actores;
 using WebApiNet8.DTOs.Paginacion;
 using WebApiNet8.Entidades;
+using WebApiNet8.Filtros;
 using WebApiNet8.Repositorios;
 using WebApiNet8.Servicios;
 
@@ -23,9 +25,9 @@ namespace WebApiNet8.EndPoints
 
             group.MapGet("/{id}", ObtenerActoresPorId);
 
-            group.MapPost("/", CrearActor);
+            group.MapPost("/", CrearActor).AddEndpointFilter<FiltroValidaciones<CrearActorDTO>>() ;
 
-            group.MapPut("/{id}", ActualizarActor);
+            group.MapPut("/{id}", ActualizarActor).AddEndpointFilter<FiltroValidaciones<CrearActorDTO>>();
 
             group.MapDelete("/{id}", EliminarActor);
 
@@ -62,8 +64,14 @@ namespace WebApiNet8.EndPoints
             return TypedResults.Ok(actorDTO);
         }
 
-        static async Task<Created<ActorDTO>> CrearActor([FromForm]CrearActorDTO crearActorDTO, IRepositorioActores repositorioActores, IOutputCacheStore outputCacheStore, IMapper mapper, IAlmacenarArchivos almacenarArchivos)
+        static async Task<Results<Created<ActorDTO>, ValidationProblem>> CrearActor([FromForm]CrearActorDTO crearActorDTO, IRepositorioActores repositorioActores, IOutputCacheStore outputCacheStore, IMapper mapper, IAlmacenarArchivos almacenarArchivos,IValidator<CrearActorDTO> validator)
         {
+            var resultValidation = await validator.ValidateAsync(crearActorDTO);
+            if (!resultValidation.IsValid)
+            {
+                return TypedResults.ValidationProblem(resultValidation.ToDictionary());
+            }
+
             var actor = mapper.Map<Actor>(crearActorDTO);
             if (crearActorDTO.Foto is not null)
             {

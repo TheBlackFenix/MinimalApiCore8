@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using WebApiNet8.EndPoints;
@@ -43,11 +44,14 @@ builder.Services.AddScoped<IRepositorioGeneros, RepositorioGeneros>();
 builder.Services.AddScoped<IRepositorioActores, RepositorioActores>();
 builder.Services.AddScoped<IRepositorioPeliculas, RepositorioPeliculas>();
 builder.Services.AddScoped<IRepositorioComentarios, RepositorioComentarios>();
+builder.Services.AddScoped<IRepositorioErrores, RepositorioErrores>();
 //Servicio para almacenar archivos en Azure
 builder.Services.AddScoped<IAlmacenarArchivos, AlmacenadorArchivosAzure>();
 //Servicio para almacenar archivos en Local
-//builder.Services.AddScoped<IAlmacenarArchivos, AlmacenadorArchivosLocal>();
+//builder.Services.AddScoped<IAlmacenarArchivos, Almacen
 
+//Servicio para detalle de problemas
+builder.Services.AddProblemDetails();
 
 builder.Services.AddHttpContextAccessor();
 // Se agrega el servicio de AutoMapper
@@ -66,6 +70,23 @@ if(app.Environment.IsDevelopment()) // Solo se activa en ambiente de desarrollo
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+// Middleware para manejo de problemas
+app.UseExceptionHandler(excepcionHadlerapp =>
+    excepcionHadlerapp.Run(async context =>
+    {
+        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+        var exception = exceptionHandlerPathFeature?.Error;
+        var error = new LogError();
+        error.MensajeError = exception.Message;
+        error.StackTrace = exception.StackTrace;
+        error.Fecha = DateTime.Now;
+        var repositorioErrores = context.RequestServices.GetRequiredService<IRepositorioErrores>();
+        await repositorioErrores.CrearLogError(error);
+
+
+    }));
+app.UseStatusCodePages();
+
 // Midelware para usar archivos estáticos
 app.UseStaticFiles();
 // Middleware para aplicar politica de CORS
