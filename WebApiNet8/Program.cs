@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
@@ -51,7 +52,8 @@ builder.Services.AddScoped<IAlmacenarArchivos, AlmacenadorArchivosAzure>();
 builder.Services.AddHttpContextAccessor();
 // Se agrega el servicio de AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
-
+// Se agrega el servicio de FluentValidation
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 #endregion
 
 var app = builder.Build();

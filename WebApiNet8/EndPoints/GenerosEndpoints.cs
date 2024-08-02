@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using WebApiNet8.DTOs.Generos;
@@ -43,8 +44,13 @@ namespace WebApiNet8.EndPoints
             return TypedResults.Ok(generoDTO);
         }
 
-        static async Task<Created<GeneroDTO>> CrearGenero(CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repositorioGeneros, IOutputCacheStore outputCacheStore, IMapper mapper)
+        static async Task<Results<Created<GeneroDTO>, ValidationProblem>> CrearGenero(CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repositorioGeneros, IOutputCacheStore outputCacheStore, IMapper mapper, IValidator<CrearGeneroDTO> validator)
         {
+            var resultValidation = await validator.ValidateAsync(crearGeneroDTO);
+            if (!resultValidation.IsValid)
+            {
+                return TypedResults.ValidationProblem(resultValidation.ToDictionary());
+            }
             var genero = mapper.Map<Genero>(crearGeneroDTO);
             var id = await repositorioGeneros.CrearGenero(genero);
             await outputCacheStore.EvictByTagAsync("generos-list", default);
