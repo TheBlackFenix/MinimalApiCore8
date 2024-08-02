@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using WebApiNet8.DTOs.Actores;
 using WebApiNet8.DTOs.Paginacion;
 using WebApiNet8.Entidades;
 
@@ -36,8 +37,28 @@ namespace WebApiNet8.Repositorios
         {
             using (var conexion = new SqlConnection(connectionString))
             {
-                var pelicula = await conexion.QueryFirstOrDefaultAsync<Pelicula>("sp_Pelicula_ObtenerPorId", new { IdPelicula = id }, commandType: CommandType.StoredProcedure);
-                return pelicula;
+                using(var multi = await conexion.QueryMultipleAsync("sp_Pelicula_ObtenerPorId", new { IdPelicula = id }, commandType: CommandType.StoredProcedure))
+                {
+                    var pelicula = await multi.ReadFirstAsync<Pelicula>();
+                    if (pelicula != null)
+                    {
+                        var comentarios = await multi.ReadAsync<Comentario>();
+                        var generos = await multi.ReadAsync<Genero>();
+                        var actores = await multi.ReadAsync<ActorPeliculaDTO>();
+                        
+                        pelicula.Comentarios = comentarios.ToList();
+                        foreach (var genero in generos)
+                        {
+                            pelicula.GenerosPeliculas.Add(new GeneroPelicula { IdGenero = genero.IdGenero, Genero = genero });
+                        }
+                        foreach (var actor in actores)
+                        {
+                            pelicula.ActoresPeliculas.Add(new ActorPelicula { IdActor = actor.IdActor, Personaje = actor.Personaje, Actor = new Actor { NombreActor = actor.NombreActor } });
+                        }
+                    }
+                    return pelicula;
+                }
+                
             }
         }
 
@@ -91,6 +112,36 @@ namespace WebApiNet8.Repositorios
             }
         }
 
+        public async Task AsignarGeneros(int id, List<int> generosIds)
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("Id", typeof(int));
+            generosIds.ForEach(id => dt.Rows.Add(id));
 
+            using (var conexion = new SqlConnection(connectionString))
+            {
+                await conexion.ExecuteAsync("sp_Pelicula_AsignarGeneros", new { IdPelicula = id, GenerosIds = dt }, commandType: CommandType.StoredProcedure);
+            }
+        }
+
+        public async Task AsignarActores(int id, List<ActorPelicula> actores)
+        {
+            for (int i = 1; i <= actores.Count; i++)
+            {
+                actores[i-1].Orden = i ;
+            }
+            var dt = new DataTable();
+            dt.Columns.Add("IdActor", typeof(int));
+            dt.Columns.Add("Personaje", typeof(string));
+            dt.Columns.Add("Orden", typeof(int));
+            actores.ForEach(actor => dt.Rows.Add(actor.IdActor, actor.Personaje, actor.Orden));
+
+            using(var conexion = new SqlConnection(connectionString))
+            {
+                await conexion.ExecuteAsync("sp_Pelicula_AsignarActores",
+                    new { IdPelicula = id, Actores = dt }, 
+                    commandType: CommandType.StoredProcedure);
+            }
+        }
     }
 }

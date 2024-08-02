@@ -68,5 +68,18 @@ namespace WebApiNet8.Repositorios
                 await connection.ExecuteAsync(@"sp_Genero_EliminarPorId", new {IdGenero = id}, commandType: CommandType.StoredProcedure);
             }
         }
+
+
+        public async Task<List<int>> Existen(List<int> ids)
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("Id", typeof(int));
+            ids.ForEach(id => dt.Rows.Add(id));
+            using (var conexion = new SqlConnection(_connectionString))
+            {
+                var result = await conexion.QueryAsync<int>("sp_Genero_ObtenerVariosPorId", new { GenerosIds = dt }, commandType: CommandType.StoredProcedure);
+                return result.ToList();
+            }
+        }
     }
 }

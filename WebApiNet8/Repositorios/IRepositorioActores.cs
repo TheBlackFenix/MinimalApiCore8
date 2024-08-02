@@ -12,5 +12,6 @@ namespace WebApiNet8.Repositorios
         Task<bool> Existe(int id);
         Task<List<Actor>> ObtenerTodos(PaginacionDTO paginacion);
         Task<List<Actor>> ObtenerFiltrados(string nombreActor);
+        Task<List<int>> Existen(List<int> ids);
     }
 }

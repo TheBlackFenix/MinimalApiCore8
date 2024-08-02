@@ -87,6 +87,21 @@ namespace WebApiNet8.Repositorios
             }
         }
 
+        public async Task<List<int>> Existen(List<int> ids)
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("Id", typeof(int));
+            ids.ForEach(id => dt.Rows.Add(id));
+
+            using (var conexion = new SqlConnection(connectionString))
+            {
+                var idsExistentes = await conexion.QueryAsync<int>("sp_Pelicula_ObtenerVariosPorId", 
+                    new { Ids = dt }, 
+                    commandType: CommandType.StoredProcedure);
+                return idsExistentes.ToList();
+            }
+        }
+
 
     }
 }
