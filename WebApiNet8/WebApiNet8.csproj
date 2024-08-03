@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>e22e6bf6-6b2a-4b7e-ba46-b577c88f377c</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,6 +13,7 @@
     <PackageReference Include="Azure.Storage.Blobs" Version="12.21.0" />
     <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
     <PackageReference Include="Microsoft.Identity.Client" Version="4.61.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
